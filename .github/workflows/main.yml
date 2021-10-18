@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         scenario:
-          - centos-8
-          - rhel-8
-          - fedora-34
+          - centos8
+          - rhel8
+          - fedora34
 
     steps:
       - name: Checkout the codebase
