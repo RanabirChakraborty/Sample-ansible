@@ -17,9 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         scenario:
-          - centos-8
           - rhel-8
-          - fedora-34
 
     steps:
       - name: Checkout the codebase
@@ -38,6 +36,7 @@ jobs:
           pip install podman
           python3 -m pip install --user "molecule[podman,lint]"
           python3 -m pip install --user "molecule[docker,lint]"
+
       - name: Run molecule tests
         run: molecule test
         env:
