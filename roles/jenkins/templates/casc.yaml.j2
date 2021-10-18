@@ -1,0 +1,189 @@
+{% if jenkins.credentials is defined %}
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+{% for cred in jenkins.credentials %}
+      - usernamePassword:
+          id: "{{ cred.id }}"
+          password: "{{ cred.password }}"
+          scope: GLOBAL
+          username: "{{ cred.username }}"
+{% endfor %}
+{% endif %}
+jenkins:
+{% if jenkins_token is defined %}
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: "{{ jenkins.role.admin.name }}"
+            description: "{{ jenkins.role.admin.desc }}"
+            permissions:
+              - "Overall/Administer"
+            assignments:
+              - "{{ jenkins.role.admin.group }}"
+          - name: "anonymous"
+            description: "Anonymous users"
+            permissions:
+              - "Overall/Read"
+              - "Job/Read"
+            assignments:
+              - "anonymous"
+          - name: "readonly"
+            description: "Read-only users"
+            permissions:
+              - "Overall/Read"
+              - "Job/Read"
+              - "Job/ExtendedRead"
+              - "View/Read"
+            assignments:
+              - "authenticated"
+          - name: "{{ jenkins.role.user.name }}"
+            description: "{{ jenkins.role.user.desc }}"
+            permissions:
+              - "Job/Move"
+              - "Job/Build"
+              - "Job/Create"
+              - "Job/Read"
+              - "Run/Replay"
+              - "Job/Cancel"
+              - "Run/Delete"
+              - "Job/ExtendedRead"
+              - "Run/Update"
+              - "Job/Delete"
+              - "Job/Configure"
+              - "Job/Workspace"
+              - "Agent/Provision"
+              - "Agent/Configure"
+              - "Agent/ExtendedRead"
+              - "Agent/Connect"
+              - "Agent/Delete"
+              - "Agent/Disconnect"
+              - "Agent/Create"
+              - "Agent/Build"
+            assignments:
+              - "{{ jenkins.role.user.group }}"
+{% endif %}
+  numExecutors: {{ jenkins.executors.num }}
+  securityRealm:
+{% if jenkins.ldap.url is defined and jenkins.ldap.url != ""  %}
+    ldap:
+      configurations:
+      - groupSearchBase: "{{ jenkins.ldap.search.group.base }}"
+        groupSearchFilter: "{{ jenkins.ldap.search.group.filter }}"
+        inhibitInferRootDN: false
+        rootDN: "{{ jenkins.ldap.rootDn }}"
+        server: "{{ jenkins.ldap.url }}"
+{% else %}
+    local:
+      allowsSignup: false
+      users:
+       - id: {{ jenkins.admin.id }}
+         password: {{ jenkins.admin.password }}
+{% endif %}
+  views:
+  - all:
+      name: "all"
+{% for stream in jenkins.view.streams  %}
+  - dashboard:
+      columns:
+{% for col in jenkins.view.tabs.columns  %}
+        - "{{ col }}"
+{% endfor %}
+      includeStdJobList: true
+      includeRegex: "{{ stream }}.*"
+      name: "{{ stream }}"
+      leftPortlets:
+      - testStatisticsChart:
+          name: "Test Statistics Chart"
+      rightPortlets:
+      - latestBuilds:
+          name: "Latest builds"
+          numBuilds: 10
+{% endfor %}
+  - dashboard:
+      name: "Component Alignment"
+      columns:
+{% for col in jenkins.view.tabs.columns  %}
+        - "{{ col }}"
+{% endfor %}
+      includeStdJobList: true
+      jobNames:
+{% for ca_job in component_alignment.jobs %}
+        - "{{ ca_job.id }}"
+{% endfor %}
+  - dashboard:
+      name: "SET CI"
+      columns:
+{% for col in jenkins.view.tabs.columns  %}
+        - "{{ col }}"
+{% endfor %}
+      includeStdJobList: true
+      jobNames:
+{% for ci_job in ci_server.jobs  %}{% if ci_job.id.startswith("ci-") %}
+        - "{{ ci_job.id }}"
+{% endif %}{% endfor %}
+
+  - dashboard:
+      name: "cryo"
+      columns:
+{% for col in jenkins.view.tabs.columns  %}
+        - "{{ col }}"
+{% endfor %}
+      includeStdJobList: true
+      jobNames:
+      includeRegex: "cryo-.*"
+
+  - dashboard:
+      name: "Failing Jobs"
+      columns:
+{% for col in jenkins.view.tabs.columns  %}
+        - "{{ col }}"
+{% endfor %}
+      includeStdJobList: true
+      jobFilters:
+      - jobStatusFilter:
+          aborted: false
+          disabled: false
+          failed: true
+          includeExcludeTypeString: "includeMatched"
+          stable: false
+          unstable: false
+      - jobStatusFilter:
+          aborted: false
+          disabled: true
+          failed: false
+          includeExcludeTypeString: "excludeMatched"
+          stable: false
+          unstable: false
+  - dashboard:
+      name: "Bugclerk"
+      columns:
+{% for col in jenkins.view.tabs.columns  %}
+        - "{{ col }}"
+{% endfor %}
+      includeStdJobList: true
+      jobNames:
+{% for ci_job in ci_server.jobs %}{% if ci_job.id.startswith("bugclerk-reports-") %}
+        - "{{ ci_job.id }}"
+{% endif %}{% endfor %}
+      leftPortlets:
+      - unstableJobsPortlet:
+          name: "Unstable Jobs"
+          recurse: false
+          showOnlyFailedJobs: false
+      name: "Bugclerk"
+      rightPortlets:
+      - statBuilds:
+          name: "Build statistics"
+  viewsTabBar: "standard"
+tool:
+
+unclassified:
+  location:
+    url: https://{{ ansible_nodename }}/jenkins
+  mailer:
+    replyToAddress: {{ mailer.replyTo }}
+    smtpHost: {{ mailer.smtp.host }}
+    smtpPort: {{ mailer.smtp.port }}

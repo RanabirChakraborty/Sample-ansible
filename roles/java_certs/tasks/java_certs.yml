@@ -1,0 +1,28 @@
+---
+- assert:
+    that:
+      - certificate_list is defined
+      - certificate_list is iterable
+
+- name: Remove SSL certificates in {{ jdk.name }}
+  when: rebuild_keystore|default(false)
+  java_cert:
+    cert_url: "{{ item.cert_url }}"
+    keystore_path: "{{ jdk.home }}/{{ jdk.name }}/jre/lib/security/cacerts"
+    cert_alias: "{{ item.alias }}"
+    executable: "{{ jdk.home }}/{{ jdk.name }}/bin/keytool"
+    keystore_pass: changeit
+    keystore_create: no
+    state: absent
+  with_items: "{{ certificate_list }}"
+
+- name: Import SSL certificates in {{ jdk.name }}
+  java_cert:
+    cert_url: "{{ item.cert_url }}"
+    keystore_path: "{{ jdk.home }}/{{ jdk.name }}/jre/lib/security/cacerts"
+    cert_alias: "{{ item.alias }}"
+    executable: "{{ jdk.home }}/{{ jdk.name }}/bin/keytool"
+    keystore_pass: changeit
+    keystore_create: no
+    state: present
+  with_items: "{{ certificate_list }}"

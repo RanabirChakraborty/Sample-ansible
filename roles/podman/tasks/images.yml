@@ -1,0 +1,16 @@
+---
+- set_fact:
+    podman_images: []
+
+- name: "Ensure remote images are downloaded"
+  containers.podman.podman_image:
+    name: "{{ item.name }}"
+  loop: "{{ podman.images.remotes }}"
+
+- name: "Ensure remote images are successfully build"
+  containers.podman.podman_image:
+    name: "{{ item.name }}"
+    tag: "{{ item.tag }}"
+    path: "ares/{{ item.name }}"
+  become_user: cloud-user
+  loop: "{{ podman.images.locals }}"
