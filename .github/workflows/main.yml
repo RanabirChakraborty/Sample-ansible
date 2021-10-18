@@ -19,7 +19,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
+          python -m pip install --upgrade pip
+          pip install molecule
+          pip install docker
+          pip install podman
+          python3 -m pip install --user "molecule[podman,lint]"
+          python3 -m pip install --user "molecule[docker,lint]"
 
       - name: Test with molecule
         run: |
