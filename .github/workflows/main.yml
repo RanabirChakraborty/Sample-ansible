@@ -20,7 +20,7 @@ jobs:
       - name: Checkout the codebase
         uses: actions/checkout@v2
         with:
-          path: Sample-ansible/roles/motd
+          path: '../../Sample-ansible/roles/motd"
 
       - name: Set up Python3
         uses: actions/setup-python@v2
