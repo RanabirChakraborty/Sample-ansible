@@ -42,7 +42,4 @@ jobs:
       - name: Run molecule tests
         run: molecule test
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
-          ANSIBLE_ROLES_PATH: "../../roles/motd"
-          MOLECULE_DISTRO: ${{ matrix.scenario }}
+          ANSIBLE_ROLES_PATH: "../../roles"
