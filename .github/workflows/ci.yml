@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Checkout the codebase
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
 
       - name: Set up Python3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v1
         with:
           python-version: '3.x'
 
@@ -36,6 +36,7 @@ jobs:
           pip install podman
           python3 -m pip install --user "molecule[podman,lint]"
           python3 -m pip install --user "molecule[docker,lint]"
+
       - name: Run molecule tests
         run: molecule test
         env:
