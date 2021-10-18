@@ -4,10 +4,10 @@ name: Molecule
 on:
   push:
     branches:
-      - olympus
+      - master
   pull_request:
     branches:
-      - olympus
+      - master
 
 jobs:
   test:
@@ -44,4 +44,3 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           MOLECULE_DISTRO: ${{ matrix.scenario }}
-
