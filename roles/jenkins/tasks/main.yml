@@ -1,0 +1,66 @@
+---
+- assert:
+    that:
+      - jenkins is defined
+      - jenkins.groupname is defined
+      - jenkins.groupname != ""
+      - jenkins.gid is defined
+      - jenkins.gid | length > 0
+      - jenkins.username is defined
+      - jenkins.username != ""
+      - jenkins.uid is defined
+      - jenkins.uid | length > 0
+      - jenkins.home is defined
+      - jenkins.home != ""
+      - jenkins.tools is defined
+      - jenkins.tools.home is defined
+      - jenkins.tools.home != ""
+    quiet: true
+
+- name: "Ensures tools home directory ({{ jenkins.tools.home }} exists."
+  file:
+    state: directory
+    path: "{{ jenkins.tools.home }}"
+    owner: "{{ jenkins.username }}"
+    group: "{{ jenkins.username }}"
+
+- name: "Deploy missing configuration file for Jenkins into {{ ares.home }}."
+  template:
+    src: templates/casc.yaml.j2
+    dest: "{{ ares.home }}/hephaestus/casc.yaml"
+    owner: "{{ ares.owner }}"
+    group: "{{ ares.owner }}"
+
+- name: "Generate SSH key {{ jenkins.home }}/.ssh/id_rsa"
+  openssh_keypair:
+    path: "{{ jenkins.home }}/.ssh/id_rsa"
+    type: rsa
+    size: 4096
+    state: present
+    force: no
+    owner: "{{ jenkins.username }}"
+    group: "{{ jenkins.groupname }}"
+
+- name: "Hard link generated key to {{ jenkins.home }}/.ssh/authorized_keys"
+  file:
+    state: hard
+    src: "{{ jenkins.home }}/.ssh/id_rsa.pub"
+    dest: "{{ jenkins.home }}/.ssh/authorized_keys"
+    owner: "{{ jenkins.username }}"
+    group: "{{ jenkins.groupname }}"
+
+- name: "Import SSL certificates from {{ jenkins.ldap.url }}"
+  java_cert:
+    cert_url: "{{ jenkins.ldap.host }}"
+    cert_port: "{{ jenkins.ldap.port }}"
+    keystore_path: "{{ jenkins.ldap.keystore }}"
+    cert_alias: "{{ jenkins.ldap.host }}"
+    executable: "{{ jenkins.default_jdk_home }}/bin/keytool"
+    keystore_pass: changeit
+    keystore_create: yes
+    state: present
+  when:
+    - jenkins.ldap is defined
+
+- set_fact:
+     podman_services: "{{ podman_services }} + {{ jenkins.service }}"

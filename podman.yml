@@ -1,0 +1,18 @@
+---
+- name: setup podman
+  hosts: all
+  gather_facts: true
+  become: yes
+
+  tasks:
+
+    - include_role:
+        name: podman
+
+    - name: "Running the container"
+      containers.podman.podman_container:
+        name: my-first-container
+        image: localhost/bashomatons:bashomatons
+        volume: /home/cloud-user/ares/bashomatons:/workspace:rw
+        state: started
+      become_user: cloud-user

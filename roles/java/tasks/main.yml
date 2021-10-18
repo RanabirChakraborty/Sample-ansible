@@ -1,0 +1,31 @@
+---
+- assert:
+    that:
+      - home_folder is defined
+
+- include_role:
+    name: fast_yum_install
+  vars:
+    package_name: tar
+
+- include_tasks: tasks/tool_install.yml
+  vars:
+    home_folder: "{{ jdk_home_folder }}"
+    default_version: "{{ jdk_default }}"
+    default_link: "{{ jdk_default_link }}"
+    list: "{{ jdk_list }}"
+  when:
+    - jdk_list is defined
+    - jdk_list is iterable
+    - jdk_home_folder is defined
+
+- include_tasks: tasks/tool_install.yml
+  vars:
+    home_folder: "{{ mvn_home_folder }}"
+    default_version: "{{ mvn_default }}"
+    default_link: "{{ mvn_default_link }}"
+    list: "{{ mvn_list }}"
+  when:
+    - mvn_list is defined
+    - mvn_list is iterable
+    - mvn_home_folder is defined

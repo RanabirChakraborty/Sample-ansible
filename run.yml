@@ -1,0 +1,23 @@
+---
+- name: setup podman
+  hosts: all
+  gather_facts: true
+  become: yes
+
+  tasks:
+
+    - name: "Ensure remote images are successfully build"
+      containers.podman.podman_image:
+        name: bashomatons
+        tag: bashomatons
+        path: /home/cloud-user/ares/bashomatons
+        state: build
+      become_user: cloud-user
+
+    - name: "Running the container"
+      containers.podman.podman_container:
+        name: my-first-container
+        image: localhost/bashomatons:bashomatons
+        volume: /home/cloud-user/ares/bashomatons:/workspace:rw
+        state: started
+      become_user: cloud-user
