@@ -14,9 +14,7 @@ jobs:
     strategy:
       matrix:
         scenario:
-          - 2.8.18
-          - 2.9.25
-          - 2.10.4
+          - rhel-8
 
     steps:
       - name: Checkout the codebase.
@@ -41,4 +39,5 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.scenario }}
         working-directory: 'roles/motd'
