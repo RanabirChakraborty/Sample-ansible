@@ -15,11 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        scenario:
-          - centos8
-          - rhel8
-          - fedora34
 
     steps:
       - name: Checkout the codebase
@@ -40,7 +35,4 @@ jobs:
           python3 -m pip install --user "molecule[docker,lint]"
 
       - name: Run molecule tests
-        run: |
-          molecule test --all
-        env:
-          MOLECULE_DISTRO: ${{ matrix.scenario }}
+        run: molecule test
