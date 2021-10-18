@@ -1,9 +1,0 @@
----
-git:
-  ssl:
-    verify: false
-  users:
-    - user: root
-      email: rchakrab@redhat.com
-      name: 'Ranabir Chakraborty'
-      home: /root

@@ -1,23 +1,36 @@
 ---
-name: Molecule Test
-on: [push, pull_request]
+name: Molecule
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
 jobs:
-  build:
+  test:
+    name: molecule
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
-        python-version: [3.6, 3.7]
+        scenario:
+          - centos-8
+          - rhel-8
+          - fedora-34
 
     steps:
-      - uses: actions/checkout@v2
-        with:
-          path: molecule_demo
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Checkout the codebase
+        uses: actions/checkout@v2
+
+      - name: Set up Python3
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+          python-version: '3.x'
+
+      - name: Install testing dependencies
         run: |
           python -m pip install --upgrade pip
           pip install molecule
@@ -25,7 +38,9 @@ jobs:
           pip install podman
           python3 -m pip install --user "molecule[podman,lint]"
           python3 -m pip install --user "molecule[docker,lint]"
-
-      - name: Test with molecule
-        run: |
-          molecule test
+      - name: Run molecule tests
+        run: molecule test
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.scenatio }}
