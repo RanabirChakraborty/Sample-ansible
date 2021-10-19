@@ -11,10 +11,6 @@ jobs:
   test:
     name: molecule
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        scenario:
-          - rhel-8
 
     steps:
       - name: Checkout the codebase.
@@ -39,5 +35,5 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
-          MOLECULE_DISTRO: ${{ matrix.scenario }}
+          MOLECULE_DISTRO: rhel-8
         working-directory: 'roles/motd'
